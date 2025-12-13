@@ -13,8 +13,8 @@ passlib==1.7.4
 psycopg2-binary==2.9.9
 pyasn1==0.5.1
 pycparser==2.21
-pydantic==2.5.3
-pydantic_core==2.14.6
+pydantic==2.7.4
+pydantic-core==2.18.4
 python-jose==3.3.0
 python-multipart==0.0.6
 rsa==4.9
