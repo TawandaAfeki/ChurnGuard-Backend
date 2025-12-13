@@ -98,7 +98,7 @@ def create_admin_user():
         full_name="Admin",
         email=admin_email,
         password_hash=hashed,
-        company_name="ChurnGuard"
+        company_name="ChoandCo"
     )
     db.add(admin)
     db.commit()
