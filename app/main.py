@@ -1,31 +1,41 @@
-from app import models
-from app.database import Base
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from . import database, models, schemas, crud, auth
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 from jose import jwt
 
+from . import database, models, schemas, crud, auth
+
+# --------------------
+# App initialization
+# --------------------
 app = FastAPI()
 
-# Add CORS middleware - IMPORTANT for connecting to your website
+# --------------------
+# CORS
+# --------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://tawandaafeki.github.io",  # Your GitHub Pages site
-        "http://localhost:3000",  # For local testing
-        "http://localhost:5173",  # For local testing (Vite)
+        "https://tawandaafeki.github.io",
+        "http://localhost:3000",
+        "http://localhost:5173",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
     ],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
+# --------------------
+# Auth
+# --------------------
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
+# --------------------
+# Database dependency
+# --------------------
 def get_db():
     db = database.SessionLocal()
     try:
@@ -33,82 +43,113 @@ def get_db():
     finally:
         db.close()
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+# --------------------
+# Current user dependency
+# --------------------
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
     try:
-        payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
+        payload = jwt.decode(
+            token,
+            auth.SECRET_KEY,
+            algorithms=[auth.ALGORITHM],
+        )
         email = payload.get("sub")
-        if email is None:
+        if not email:
             raise HTTPException(status_code=401, detail="Invalid token")
+
         user = crud.get_user_by_email(db, email=email)
-        if user is None:
+        if not user:
             raise HTTPException(status_code=401, detail="User not found")
+
         return user
-    except:
+
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-# Health check endpoint
+# --------------------
+# Health check
+# --------------------
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "ChurnGuard API is running"}
+    return {
+        "status": "ok",
+        "message": "ChurnGuard API is running",
+    }
 
-# Auth
+# --------------------
+# Auth endpoints
+# --------------------
 @app.post("/api/register", response_model=schemas.UserOut)
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_email(db, user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+def register(
+    user: schemas.UserCreate,
+    db: Session = Depends(get_db),
+):
+    existing = crud.get_user_by_email(db, user.email)
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered",
+        )
+
     return crud.create_user(db, user)
 
+
 @app.post("/api/login")
-def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+def login(
+    user: schemas.UserLogin,
+    db: Session = Depends(get_db),
+):
     db_user = crud.get_user_by_email(db, user.email)
-    if not db_user or not auth.verify_password(user.password, db_user.password_hash):
+
+    if not db_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = auth.create_access_token({"sub": db_user.email})
-    return {"access_token": token, "token_type": "bearer"}
 
-# Clients
-@app.get("/api/clients", response_model=list[schemas.ClientOut])
-def read_clients(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return crud.get_clients(db, user_id=current_user.id)
+    if not auth.verify_password(
+        user.password,
+        db_user.password_hash,
+    ):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-@app.post("/api/clients", response_model=schemas.ClientOut)
-def add_client(client: schemas.ClientCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return crud.create_client(db, client, user_id=current_user.id)
+    token = auth.create_access_token(
+        {"sub": db_user.email}
+    )
 
-# Remove duplicate metadata creation
-# from app.database import Base, engine
-# Base.metadata.create_all(bind=engine)
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+    }
 
-import os
-
-def create_admin_user():
-    admin_email = os.getenv("ADMIN_EMAIL")
-    admin_password = os.getenv("ADMIN_PASSWORD")
-
-    if not admin_email or not admin_password:
-        print("Admin env vars not set, skipping admin creation")
-        return
-
-    db = database.SessionLocal()
-    try:
-        existing = crud.get_user_by_email(db, admin_email)
-        if existing:
-            return
-
-        admin = models.User(
-            email=admin_email,
-            password_hash=auth.hash_password(admin_password),
-            company_id=1  # temporary, safe default
-        )
-        db.add(admin)
-        db.commit()
-    finally:
-        db.close()
+# --------------------
+# Clients (user-scoped)
+# --------------------
+@app.get(
+    "/api/clients",
+    response_model=list[schemas.ClientOut],
+)
+def read_clients(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.get_clients(
+        db,
+        user_id=current_user.id,
+    )
 
 
-from fastapi import FastAPI
-
-@app.on_event("startup")
-def startup_event():
-    create_admin_user()
+@app.post(
+    "/api/clients",
+    response_model=schemas.ClientOut,
+)
+def add_client(
+    client: schemas.ClientCreate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.create_client(
+        db,
+        client,
+        user_id=current_user.id,
+    )
