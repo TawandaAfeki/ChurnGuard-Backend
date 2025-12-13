@@ -95,7 +95,7 @@ def create_admin_user():
     if existing:
         return
 
-    hashed = auth.get_password_hash(admin_password)
+    hashed = auth.hash_password(admin_password)
     admin = models.User(
         full_name="Admin",
         email=admin_email,
