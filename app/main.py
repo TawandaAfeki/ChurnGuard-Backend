@@ -87,25 +87,32 @@ def add_client(client: schemas.ClientCreate, current_user: models.User = Depends
 import os
 
 def create_admin_user():
-    db = database.SessionLocal()
     admin_email = os.getenv("ADMIN_EMAIL")
     admin_password = os.getenv("ADMIN_PASSWORD")
 
     if not admin_email or not admin_password:
+        print("Admin env vars not set, skipping admin creation")
         return
 
-    existing = crud.get_user_by_email(db, admin_email)
-    if existing:
-        return
+    db = database.SessionLocal()
+    try:
+        existing = crud.get_user_by_email(db, admin_email)
+        if existing:
+            return
 
-    hashed = auth.hash_password(admin_password)
-    admin = models.User(
-        full_name="Admin",
-        email=admin_email,
-        password_hash=hashed,
-        company_name="ChoandCo"
-    )
-    db.add(admin)
-    db.commit()
+        admin = models.User(
+            email=admin_email,
+            password_hash=auth.hash_password(admin_password),
+            company_id=1  # temporary, safe default
+        )
+        db.add(admin)
+        db.commit()
+    finally:
+        db.close()
 
-create_admin_user()
+
+from fastapi import FastAPI
+
+@app.on_event("startup")
+def startup_event():
+    create_admin_user()
