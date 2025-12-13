@@ -7,10 +7,6 @@ from . import database, models, schemas, crud, auth
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 
-
-Base.metadata.create_all(bind=database.engine)
-
-
 app = FastAPI()
 
 # Add CORS middleware - IMPORTANT for connecting to your website
