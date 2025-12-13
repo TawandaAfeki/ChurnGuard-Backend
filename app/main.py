@@ -1,4 +1,5 @@
 from app import models
+from app.database import Base
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -6,7 +7,9 @@ from . import database, models, schemas, crud, auth
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 
-models.Base.metadata.create_all(bind=database.engine)
+
+Base.metadata.create_all(bind=database.engine)
+
 
 app = FastAPI()
 
