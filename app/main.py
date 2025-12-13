@@ -81,10 +81,12 @@ def add_client(client: schemas.ClientCreate, current_user: models.User = Depends
 # from app.database import Base, engine
 # Base.metadata.create_all(bind=engine)
 
+import os
+
 def create_admin_user():
     db = database.SessionLocal()
-    admin_email = os.getenv("choandcopty@gmail.com")
-    admin_password = os.getenv("123456")
+    admin_email = os.getenv("ADMIN_EMAIL")
+    admin_password = os.getenv("ADMIN_PASSWORD")
 
     if not admin_email or not admin_password:
         return
@@ -102,3 +104,5 @@ def create_admin_user():
     )
     db.add(admin)
     db.commit()
+
+create_admin_user()
