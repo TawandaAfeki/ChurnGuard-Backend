@@ -80,3 +80,25 @@ def add_client(client: schemas.ClientCreate, current_user: models.User = Depends
 # Remove duplicate metadata creation
 # from app.database import Base, engine
 # Base.metadata.create_all(bind=engine)
+
+def create_admin_user():
+    db = database.SessionLocal()
+    admin_email = os.getenv("ADMIN_EMAIL")
+    admin_password = os.getenv("ADMIN_PASSWORD")
+
+    if not admin_email or not admin_password:
+        return
+
+    existing = crud.get_user_by_email(db, admin_email)
+    if existing:
+        return
+
+    hashed = auth.get_password_hash(admin_password)
+    admin = models.User(
+        full_name="Admin",
+        email=admin_email,
+        password_hash=hashed,
+        company_name="ChurnGuard"
+    )
+    db.add(admin)
+    db.commit()
