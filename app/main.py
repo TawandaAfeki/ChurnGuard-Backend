@@ -172,19 +172,21 @@ def get_alerts(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    alerts = crud.get_active_alerts_for_user(db, current_user.id)
+    rows = crud.get_active_alerts_for_user(db, current_user.id)
 
     return [
         {
-            "id": a.id,
-            "priority": a.priority,
-            "title": a.title,
-            "description": a.description,
-            "alert_type": a.alert_type,
-            "customer_id": a.client_id,
+            "id": alert.id,
+            "priority": alert.priority,
+            "title": alert.title,
+            "description": alert.description,
+            "alert_type": alert.alert_type,
+            "customer_id": alert.client_id,
+            "customer_name": customer_name,   # ✅ ADD THIS
         }
-        for a in alerts
+        for alert, customer_name in rows
     ]
+
 
 @app.get("/api/customers/dashboard", response_model=list[schemas.CustomerDashboardOut])
 def customers_dashboard(

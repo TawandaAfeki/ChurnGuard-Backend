@@ -83,7 +83,11 @@ def generate_alerts_for_company(db: Session, company_id: int):
 
 def get_active_alerts_for_user(db: Session, user_id: int):
     return (
-        db.query(models.Alert)
+        db.query(
+            models.Alert,
+            models.Customer.name.label("customer_name")
+        )
+        .join(models.Customer, models.Customer.id == models.Alert.client_id)
         .filter(
             models.Alert.user_id == user_id,
             models.Alert.status == "active",
@@ -94,6 +98,7 @@ def get_active_alerts_for_user(db: Session, user_id: int):
         )
         .all()
     )
+
 
 
 def get_customers_dashboard(db: Session, company_id: int):
