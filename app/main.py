@@ -167,4 +167,10 @@ def get_alerts(
 ):
     return crud.get_active_alerts_for_user(db, current_user.id)
 
+@app.get("/api/customers/dashboard", response_model=list[schemas.CustomerDashboardOut])
+def customers_dashboard(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.get_customers_dashboard(db, current_user.company_id)
 

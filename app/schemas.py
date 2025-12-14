@@ -49,3 +49,18 @@ class AlertOut(BaseModel):
     class Config:
         from_attributes = True
 
+class CustomerDashboardOut(BaseModel):
+    id: int
+    name: str
+    email: str | None
+    mrr: float
+    contract_end_date: date | None
+    status: str
+
+    health_score: int | None
+    risk_level: str | None
+
+    last_login_at: datetime | None
+    support_tickets_count: int | None
+    features_used: int | None
+    payment_status: str | None

@@ -52,5 +52,44 @@ def get_active_alerts_for_user(db: Session, user_id: int):
         .all()
     )
 
+def get_customers_dashboard(db: Session, company_id: int):
+    return db.execute("""
+        SELECT
+            c.id,
+            c.name,
+            c.email,
+            c.mrr,
+            c.contract_end_date,
+            c.status,
+
+            hs.score AS health_score,
+            hs.risk_level,
+
+            cm.last_login_at,
+            cm.support_tickets_count,
+            cm.features_used,
+            cm.payment_status
+
+        FROM customers c
+
+        LEFT JOIN LATERAL (
+            SELECT *
+            FROM health_scores
+            WHERE client_id = c.id
+            ORDER BY calculated_at DESC
+            LIMIT 1
+        ) hs ON true
+
+        LEFT JOIN LATERAL (
+            SELECT *
+            FROM customer_metrics
+            WHERE client_id = c.id
+            ORDER BY metric_date DESC
+            LIMIT 1
+        ) cm ON true
+
+        WHERE c.company_id = :company_id
+        ORDER BY c.name;
+    """, {"company_id": company_id}).mappings().all()
 
 
