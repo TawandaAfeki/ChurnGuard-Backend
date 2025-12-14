@@ -9,26 +9,30 @@ def get_user_by_email(db: Session, email: str):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    # 1. Find or create company
-    company = None
-    if user.company_name:
-        company = db.query(models.Company).filter(
-            models.Company.name == user.company_name
-        ).first()
+    # --------------------
+    # 1. Find or create company (REQUIRED)
+    # --------------------
+    if not user.company_name:
+        raise ValueError("company_name is required")
 
-        if not company:
-            company = models.Company(name=user.company_name)
-            db.add(company)
-            db.commit()
-            db.refresh(company)
+    company = db.query(models.Company).filter(
+        models.Company.name == user.company_name
+    ).first()
 
-    # 2. Create user (ALL required fields)
+    if not company:
+        company = models.Company(name=user.company_name)
+        db.add(company)
+        db.commit()
+        db.refresh(company)
+
+    # --------------------
+    # 2. Create user
+    # --------------------
     db_user = models.User(
-        full_name=user.full_name,              # 🔴 REQUIRED
+        full_name=user.full_name,
         email=user.email,
         password_hash=auth.hash_password(user.password),
-        company_id=company.id if company else None,
-        company_name=user.company_name,         # optional but matches DB
+        company_id=company.id,   # ✅ ALWAYS SET
     )
 
     db.add(db_user)
@@ -36,4 +40,5 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
 
     return db_user
+
 
