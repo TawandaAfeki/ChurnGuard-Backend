@@ -153,3 +153,10 @@ def add_client(
         client,
         user_id=current_user.id,
     )
+
+@app.get("/api/me", response_model=schemas.UserOut)
+def read_me(
+    current_user: models.User = Depends(get_current_user),
+):
+    return current_user
+
