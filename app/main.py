@@ -82,17 +82,14 @@ def read_root():
 # --------------------
 # Auth endpoints
 # --------------------
-@app.post("/api/register")
+@app.post("/api/register", response_model=schemas.UserOut)
 def register(
     user: schemas.UserCreate,
     db: Session = Depends(get_db),
 ):
     existing = crud.get_user_by_email(db, user.email)
     if existing:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered",
-        )
+        raise HTTPException(status_code=400, detail="Email already registered")
 
     return crud.create_user(db, user)
 
