@@ -47,7 +47,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 def generate_alerts_for_company(db: Session, company_id: int):
-    db.execute(text("""
+    result = db.execute(text("""
         INSERT INTO alerts (
             user_id,
             client_id,
@@ -76,7 +76,9 @@ def generate_alerts_for_company(db: Session, company_id: int):
           )
     """), {"company_id": company_id})
 
+    print("ALERTS INSERTED:", result.rowcount)  # 👈 ADD THIS
     db.commit()
+
 
 
 def get_active_alerts_for_user(db: Session, user_id: int):
