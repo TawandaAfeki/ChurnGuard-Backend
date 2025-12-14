@@ -46,6 +46,38 @@ def create_user(db: Session, user: schemas.UserCreate):
 
     return db_user
 
+def generate_alerts_for_company(db: Session, company_id: int):
+    db.execute(text("""
+        INSERT INTO alerts (
+            user_id,
+            client_id,
+            alert_type,
+            priority,
+            title,
+            description
+        )
+        SELECT
+            u.id,
+            c.id,
+            'high_risk',
+            'high',
+            'Customer at high risk',
+            'Health score below 40'
+        FROM customers c
+        JOIN users u ON u.company_id = c.company_id
+        JOIN health_scores hs ON hs.client_id = c.id
+        WHERE c.company_id = :company_id
+          AND hs.score < 40
+          AND NOT EXISTS (
+              SELECT 1 FROM alerts a
+              WHERE a.client_id = c.id
+                AND a.alert_type = 'high_risk'
+                AND a.status = 'active'
+          )
+    """), {"company_id": company_id})
+
+    db.commit()
+
 
 def get_active_alerts_for_user(db: Session, user_id: int):
     return (
@@ -106,3 +138,23 @@ def get_customers_dashboard(db: Session, company_id: int):
     )
 
     return result.mappings().all()
+
+def get_churn_trend(db: Session, company_id: int):
+    result = db.execute(
+        text("""
+            SELECT
+                date_trunc('month', hs.calculated_at) AS month,
+                COUNT(*) FILTER (WHERE hs.risk_level = 'high')   AS high,
+                COUNT(*) FILTER (WHERE hs.risk_level = 'medium') AS medium,
+                COUNT(*) FILTER (WHERE hs.risk_level = 'low')    AS low
+            FROM health_scores hs
+            JOIN customers c ON c.id = hs.client_id
+            WHERE c.company_id = :company_id
+            GROUP BY month
+            ORDER BY month
+        """),
+        {"company_id": company_id},
+    )
+
+    return result.mappings().all()
+

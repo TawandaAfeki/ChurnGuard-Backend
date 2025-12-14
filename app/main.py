@@ -180,3 +180,9 @@ def customers_dashboard(
 ):
     return crud.get_customers_dashboard(db, current_user.company_id)
 
+@app.get("/api/dashboard/churn-trend")
+def churn_trend(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    return crud.get_churn_trend(db, current_user.company_id)
