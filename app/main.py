@@ -101,12 +101,8 @@ def login(
 ):
     db_user = crud.get_user_by_email(db, user.email)
 
-    if not db_user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    if not auth.verify_password(
-        user.password,
-        db_user.password_hash,
+    if not db_user or not auth.verify_password(
+        user.password, db_user.password_hash
     ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
@@ -117,7 +113,14 @@ def login(
     return {
         "access_token": token,
         "token_type": "bearer",
+        "user": {
+            "id": db_user.id,
+            "full_name": db_user.full_name,
+            "email": db_user.email,
+            "company_id": db_user.company_id,
+        },
     }
+
 
 # --------------------
 # Clients (user-scoped)
