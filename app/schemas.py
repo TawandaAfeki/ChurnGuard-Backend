@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
 
 class UserOut(BaseModel):
     id: int
+    full_name: str
     email: EmailStr
     company_id: int
 
