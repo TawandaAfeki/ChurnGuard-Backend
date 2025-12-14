@@ -36,3 +36,16 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+from datetime import datetime
+
+class AlertOut(BaseModel):
+    id: str
+    alert_type: str
+    priority: str
+    title: str
+    description: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+

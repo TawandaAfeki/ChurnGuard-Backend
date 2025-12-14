@@ -41,4 +41,16 @@ def create_user(db: Session, user: schemas.UserCreate):
 
     return db_user
 
+def get_active_alerts_for_user(db: Session, user_id: int):
+    return (
+        db.query(models.Alert)
+        .filter(
+            models.Alert.user_id == user_id,
+            models.Alert.status == "active"
+        )
+        .order_by(models.Alert.priority.desc(), models.Alert.created_at.desc())
+        .all()
+    )
+
+
 

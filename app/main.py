@@ -160,3 +160,11 @@ def read_me(
 ):
     return current_user
 
+@app.get("/api/alerts", response_model=list[schemas.AlertOut])
+def get_alerts(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.get_active_alerts_for_user(db, current_user.id)
+
+
