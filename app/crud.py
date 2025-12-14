@@ -19,13 +19,13 @@ def create_user(db: Session, user: schemas.UserCreate):
         raise ValueError("company_name is required")
 
     company = (
-        db.query(models.Company)
+        db.query(models.Client)
         .filter(models.Company.name == user.company_name)
         .first()
     )
 
     if not company:
-        company = models.Company(name=user.company_name)
+        company = models.Client(name=user.company_name)
         db.add(company)
         db.commit()
         db.refresh(company)
@@ -84,10 +84,15 @@ def generate_alerts_for_company(db: Session, company_id: int):
 def get_active_alerts_for_user(db: Session, user_id: int):
     return (
         db.query(
-            models.Alert,
-            models.Customer.name.label("customer_name")
+            models.Alert.id,
+            models.Alert.priority,
+            models.Alert.title,
+            models.Alert.description,
+            models.Alert.alert_type,
+            models.Alert.client_id,
+            models.Client.name.label("customer_name"),
         )
-        .join(models.Customer, models.Customer.id == models.Alert.client_id)
+        .join(models.Client, models.Client.id == models.Alert.client_id)
         .filter(
             models.Alert.user_id == user_id,
             models.Alert.status == "active",

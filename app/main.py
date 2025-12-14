@@ -176,15 +176,15 @@ def get_alerts(
 
     return [
         {
-            "id": alert.id,
-            "priority": alert.priority,
-            "title": alert.title,
-            "description": alert.description,
-            "alert_type": alert.alert_type,
-            "customer_id": alert.client_id,
-            "customer_name": customer_name,   # ✅ ADD THIS
+            "id": r.id,
+            "priority": r.priority,
+            "title": r.title,
+            "description": r.description,
+            "alert_type": r.alert_type,
+            "customer_id": r.client_id,
+            "customer_name": r.customer_name,
         }
-        for alert, customer_name in rows
+        for r in rows
     ]
 
 
