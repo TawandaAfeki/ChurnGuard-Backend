@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import jwt
+# in main.py
+import app.models as m
+print("MODELS:", dir(m))
+
 
 from . import database, models, schemas, crud, auth
 
