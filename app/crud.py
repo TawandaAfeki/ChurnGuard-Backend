@@ -4,10 +4,9 @@ from .auth import hash_password
 
 def create_user(db: Session, user: schemas.UserCreate):
     db_user = models.User(
-        full_name=user.full_name,
         email=user.email,
-        password_hash=hash_password(user.password),
-        company_name=user.company_name
+        password_hash=auth.hash_password(user.password),
+        company_id=1  # temporary default (TestCompany)
     )
     db.add(db_user)
     db.commit()
