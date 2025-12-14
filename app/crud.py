@@ -70,7 +70,7 @@ def get_customers_dashboard(db: Session, company_id: int):
                 c.name,
                 c.email,
                 c.mrr,
-                c.contract_end,      -- ✅ correct column
+                c.contract_end AS contract_end_date,
                 c.status,
 
                 hs.score AS health_score,
@@ -106,6 +106,3 @@ def get_customers_dashboard(db: Session, company_id: int):
     )
 
     return result.mappings().all()
-
-
-
