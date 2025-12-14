@@ -6,7 +6,7 @@ class UserCreate(BaseModel):
     full_name: str
     email: EmailStr
     password: str
-    company_name: Optional[str]
+    company_name: str
 
 class UserOut(BaseModel):
     id: int

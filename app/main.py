@@ -82,7 +82,7 @@ def read_root():
 # --------------------
 # Auth endpoints
 # --------------------
-@app.post("/api/register", response_model=schemas.UserOut)
+@app.post("/api/register")
 def register(
     user: schemas.UserCreate,
     db: Session = Depends(get_db),
