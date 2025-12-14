@@ -166,23 +166,44 @@ def read_me(
     }
 
 
-@app.get("/api/alerts", response_model=list[schemas.AlertOut])
+@app.get("/api/alerts")
 def get_alerts(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return crud.get_active_alerts_for_user(db, current_user.id)
+    alerts = crud.get_active_alerts_for_user(db, current_user.id)
+
+    return [
+        {
+            "id": a.id,
+            "priority": a.priority,
+            "title": a.title,
+            "description": a.description,
+            "alert_type": a.alert_type,
+            "customer_id": a.client_id,
+        }
+        for a in alerts
+    ]
 
 @app.get("/api/customers/dashboard", response_model=list[schemas.CustomerDashboardOut])
 def customers_dashboard(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    crud.generate_alerts_for_company(db, current_user.company_id)  # ✅ ADD THIS
     return crud.get_customers_dashboard(db, current_user.company_id)
+
 
 @app.get("/api/dashboard/churn-trend")
 def churn_trend(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
+):
+    return crud.get_churn_trend(db, current_user.company_id)
+
+@app.get("/api/dashboard/trends")
+def churn_trends(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     return crud.get_churn_trend(db, current_user.company_id)

@@ -143,18 +143,19 @@ def get_churn_trend(db: Session, company_id: int):
     result = db.execute(
         text("""
             SELECT
-                date_trunc('month', hs.calculated_at) AS month,
-                COUNT(*) FILTER (WHERE hs.risk_level = 'high')   AS high,
-                COUNT(*) FILTER (WHERE hs.risk_level = 'medium') AS medium,
-                COUNT(*) FILTER (WHERE hs.risk_level = 'low')    AS low
+              date_trunc('month', hs.calculated_at) AS month,
+              COUNT(*) FILTER (WHERE hs.risk_level = 'high')   AS high,
+              COUNT(*) FILTER (WHERE hs.risk_level = 'medium') AS medium,
+              COUNT(*) FILTER (WHERE hs.risk_level = 'low')    AS low
             FROM health_scores hs
             JOIN customers c ON c.id = hs.client_id
             WHERE c.company_id = :company_id
             GROUP BY month
-            ORDER BY month
+            ORDER BY month;
         """),
         {"company_id": company_id},
     )
 
     return result.mappings().all()
+
 
