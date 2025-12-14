@@ -154,11 +154,17 @@ def add_client(
         user_id=current_user.id,
     )
 
-@app.get("/api/me", response_model=schemas.UserOut)
+@app.get("/api/me")
 def read_me(
     current_user: models.User = Depends(get_current_user),
 ):
-    return current_user
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "company_id": current_user.company_id,
+    }
+
 
 @app.get("/api/alerts", response_model=list[schemas.AlertOut])
 def get_alerts(
