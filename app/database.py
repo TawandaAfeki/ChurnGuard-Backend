@@ -1,28 +1,30 @@
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Get database URL from environment variable or use local default
-SQLALCHEMY_DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres.cejchdjvuceuugueswvc:ChoandCo@20@aws-0-us-west-2.pooler.supabase.com:5432/postgres"
+# Read database URL from environment variable ONLY
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is not set")
+
+# Create SQLAlchemy engine with Supabase-compatible settings
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,          # Prevent stale connections
+    pool_size=5,
+    max_overflow=5,
+    connect_args={
+        "sslmode": "require"     # Supabase requires SSL
+    },
 )
 
-# Fix for Render/Heroku PostgreSQL URLs
-# They provide postgres:// but SQLAlchemy requires postgresql://
-if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace(
-        "postgres://", 
-        "postgresql://", 
-        1
-    )
+# Session factory
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-# Create SQLAlchemy engine
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
-# Create SessionLocal class for database sessions
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Create Base class for declarative models
+# Base class for models
 Base = declarative_base()
