@@ -7,6 +7,7 @@ from jose import jwt
 
 from . import database, models, schemas, crud, auth
 
+
 # --------------------
 # App initialization
 # --------------------
@@ -211,10 +212,39 @@ def churn_trends(
 ):
     return crud.get_churn_trend(db, current_user.company_id)
 
-@app.get("/risk-momentum")
-def risk_momentum(db: Session = Depends(get_db)):
+@app.get("/api/analytics/revenue-at-risk")
+def revenue_at_risk(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    result = db.execute(text("""
+        SELECT
+            SUM(mrr * churn_probability) AS expected_mrr_loss,
+            SUM(mrr) AS total_mrr
+        FROM analytics_latest_churn
+    """)).fetchone()
+
+    expected_loss = result.expected_mrr_loss or 0
+    total_mrr = result.total_mrr or 0
+
+    return {
+        "expected_mrr_loss": round(expected_loss, 2),
+        "total_mrr": round(total_mrr, 2),
+        "risk_ratio": round(
+            expected_loss / total_mrr if total_mrr else 0,
+            2
+        )
+    }
+
+
+@app.get("/api/analytics/risk-momentum")
+def risk_momentum(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     rows = db.execute(text("""
         SELECT
+            c.id,
             c.name,
             r.delta_churn
         FROM analytics_risk_momentum r
@@ -224,6 +254,7 @@ def risk_momentum(db: Session = Depends(get_db)):
 
     return [
         {
+            "client_id": row.id,
             "customer": row.name,
             "trend": (
                 "deteriorating" if row.delta_churn > 0.1
@@ -235,19 +266,23 @@ def risk_momentum(db: Session = Depends(get_db)):
         for row in rows
     ]
 
-@app.post("/simulate-churn")
+@app.post("/api/analytics/simulate-churn")
 def simulate_churn(
     client_id: int,
     login_delta: int = 0,
     ticket_delta: int = 0,
     payment_fix: bool = False,
-    db: Session = Depends(get_db)
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     row = db.execute(text("""
-        SELECT churn_probability::float, factors
+        SELECT churn_probability::float
         FROM analytics_latest_churn
         WHERE client_id = :client_id
     """), {"client_id": client_id}).fetchone()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Customer not found")
 
     churn = row.churn_probability
 
@@ -263,3 +298,4 @@ def simulate_churn(
         "simulated": round(churn, 2),
         "impact": round(row.churn_probability - churn, 2)
     }
+
