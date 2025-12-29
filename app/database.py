@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 # Get database URL from environment variable or use local default
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://churnguard_user:123456@localhost:5432/churngaurd_db"
+    "postgresql://postgres.cejchdjvuceuugueswvc:ChoandCo@20@aws-0-us-west-2.pooler.supabase.com:5432/postgres"
 )
 
 # Fix for Render/Heroku PostgreSQL URLs
