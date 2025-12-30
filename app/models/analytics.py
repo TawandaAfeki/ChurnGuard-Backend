@@ -38,22 +38,19 @@ def risk_momentum(db: Session = Depends(get_db)):
     """)).fetchall()
 
     return [
-        {
-            "client_id": row.id,
-            "customer": row.name,
-            "trend": (
-                if row.delta_churn > 0.02:
-    trend = "deteriorating"
-elif row.delta_churn < -0.02:
-    trend = "improving"
-else:
-    trend = "stable"
+  {
+    "customer": row.name,
+    "trend": (
+      "deteriorating" if row.delta_churn > 0.1
+      else "improving" if row.delta_churn < -0.1
+      else "stable"
+    ),
+    "delta": round(row.delta_churn, 2),
+    "revenue_at_risk": round(row.mrr * row.churn_probability, 2)
+  }
+  for row in rows
+]
 
-            ),
-            "delta": round(row.delta_churn, 2)
-        }
-        for row in rows
-    ]
 
 
 @router.post("/simulate-churn")
