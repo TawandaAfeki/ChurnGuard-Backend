@@ -300,3 +300,21 @@ def simulate_churn(
         "impact": round(row.churn_probability - churn, 2)
     }
 
+@app.get("/api/analytics/revenue-at-risk-history")
+def revenue_at_risk_history(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    rows = db.execute(text("""
+        SELECT month, revenue_at_risk
+        FROM analytics_revenue_at_risk_monthly
+        ORDER BY month
+    """)).fetchall()
+
+    return [
+        {
+            "month": r.month,
+            "value": round(r.revenue_at_risk or 0, 2)
+        }
+        for r in rows
+    ]

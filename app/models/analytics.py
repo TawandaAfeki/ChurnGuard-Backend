@@ -42,9 +42,13 @@ def risk_momentum(db: Session = Depends(get_db)):
             "client_id": row.id,
             "customer": row.name,
             "trend": (
-                "deteriorating" if row.delta_churn > 0.1
-                else "improving" if row.delta_churn < -0.1
-                else "stable"
+                if row.delta_churn > 0.02:
+    trend = "deteriorating"
+elif row.delta_churn < -0.02:
+    trend = "improving"
+else:
+    trend = "stable"
+
             ),
             "delta": round(row.delta_churn, 2)
         }
