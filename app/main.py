@@ -245,27 +245,29 @@ def risk_momentum(
 ):
     rows = db.execute(text("""
         SELECT
-            c.id,
-            c.name,
-            r.delta_churn
-        FROM analytics_risk_momentum r
-        JOIN customers c ON c.id = r.client_id
-        ORDER BY r.delta_churn DESC
+            client_id,
+            name,
+            delta_churn,
+            revenue_at_risk
+        FROM analytics_risk_momentum
+        ORDER BY revenue_at_risk DESC
     """)).fetchall()
 
     return [
         {
-            "client_id": row.id,
-            "customer": row.name,
+            "client_id": r.client_id,
+            "customer": r.name,
             "trend": (
-                "deteriorating" if row.delta_churn > 0.1
-                else "improving" if row.delta_churn < -0.1
+                "deteriorating" if r.delta_churn > 0.1
+                else "improving" if r.delta_churn < -0.1
                 else "stable"
             ),
-            "delta": round(row.delta_churn, 2)
+            "delta": round(r.delta_churn, 2),
+            "revenue_at_risk": round(r.revenue_at_risk or 0, 2)
         }
-        for row in rows
+        for r in rows
     ]
+
 
 @app.post("/api/analytics/simulate-churn")
 def simulate_churn(
