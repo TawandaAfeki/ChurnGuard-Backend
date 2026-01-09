@@ -6,15 +6,13 @@ class Client(Base):
     __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, index=True)
+
+    # USER-ENTERED DATA (Settings / Add Customer)
     name = Column(String, nullable=False)
-    email = Column(String)
-    mrr = Column(Numeric(10, 2))
-    health_score = Column(Integer)
-    risk_level = Column(String)
-    last_active = Column(Date)
-    contract_end = Column(Date)
-    actions = Column(String)
-    
+    email = Column(String, nullable=False)
+    mrr = Column(Numeric(10, 2), nullable=False)
+    contract_end = Column(Date, nullable=True)
+
     company_id = Column(
         Integer,
         ForeignKey("companies.id", ondelete="CASCADE"),
@@ -22,4 +20,3 @@ class Client(Base):
     )
 
     company = relationship("Company")
-
