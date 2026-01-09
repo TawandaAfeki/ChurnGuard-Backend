@@ -143,10 +143,10 @@ def read_clients(
 
 
 @app.post(
-    "/api/clients",
+    "/api/customers",
     response_model=schemas.ClientOut,
 )
-def add_client(
+def add_customer(
     client: schemas.ClientCreate,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -154,7 +154,7 @@ def add_client(
     return crud.create_client(
         db,
         client,
-        user_id=current_user.id,
+        company_id=current_user.company_id,
     )
 
 @app.get("/api/me")
