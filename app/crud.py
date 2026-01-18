@@ -19,7 +19,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         raise ValueError("company_name is required")
 
     company = (
-        db.query(models.Client)
+        db.query(models.Company)
         .filter(models.Company.name == user.company_name)
         .first()
     )
@@ -170,4 +170,23 @@ def get_churn_trend(db: Session, company_id: int):
 
     return result.mappings().all()
 
+def create_client(
+    db: Session,
+    client: schemas.ClientCreate,
+    company_id: int,
+):
+    db_client = models.Client(
+        name=client.name,
+        email=client.email,
+        mrr=client.mrr,
+        contract_end=client.contract_end,
+        company_id=company_id,
+        status="active",
+    )
+
+    db.add(db_client)
+    db.commit()
+    db.refresh(db_client)
+
+    return db_client
 
