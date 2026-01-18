@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
-from datetime import date
-from decimal import Decimal 
+from datetime import date 
 
 class UserCreate(BaseModel):
     full_name: str
@@ -20,9 +19,9 @@ class UserOut(BaseModel):
 
 class ClientCreate(BaseModel):
     name: str
-    email: Optional[EmailStr]
-    mrr: Decimal
-    contract_end: Optional[date]
+    email: Optional[EmailStr] = None
+    mrr: float
+    contract_end: Optional[date] = None
 
 
 class ClientOut(ClientCreate):
