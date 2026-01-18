@@ -22,7 +22,7 @@ class ClientCreate(BaseModel):
     email: Optional[EmailStr] = None
     mrr: float
     contract_end: Optional[date] = None
-	contract_start_date: Optional[date] = None
+contract_start_date: Optional[date] = None
 
 class ClientOut(ClientCreate):
     id: int
