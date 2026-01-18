@@ -12,6 +12,7 @@ class Client(Base):
     email = Column(String, nullable=False)
     mrr = Column(Numeric(10, 2), nullable=False)
     contract_end = Column(Date, nullable=True)
+	contract_start_date = Column(Date, nullable=True)
 
     company_id = Column(
         Integer,

@@ -183,6 +183,7 @@ def create_client(
             contract_end=client.contract_end,
             company_id=company_id,
             status="active",
+		contract_start_date=client.contract_start_date,
         )
 
         db.add(db_client)
