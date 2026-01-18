@@ -180,7 +180,7 @@ def create_client(
         email=client.email,
         mrr=client.mrr,
         contract_end=client.contract_end,
-        company_id=company_id,
+        company_id=company_id,  # ✅ CRITICAL
         status="active",
     )
 
@@ -189,4 +189,5 @@ def create_client(
     db.refresh(db_client)
 
     return db_client
+
 
