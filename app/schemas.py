@@ -21,13 +21,16 @@ class ClientCreate(BaseModel):
     name: str
     email: Optional[EmailStr] = None
     mrr: float
+    contract_start_date: Optional[date] = None
     contract_end: Optional[date] = None
-contract_start_date: Optional[date] = None
+
 
 class ClientOut(ClientCreate):
     id: int
+
     class Config:
         from_attributes = True
+
 
 class UserLogin(BaseModel):
     email: EmailStr
