@@ -175,25 +175,27 @@ def create_client(
     client: schemas.ClientCreate,
     company_id: int,
 ):
-    db_client = models.Client(
-        name=client.name,
-        email=client.email,
-        mrr=client.mrr,
-        contract_end=client.contract_end,
-        company_id=company_id,
-        status="active",
-        health_score=None,
-        risk_level=None,
-        last_active=None,
-        actions=None,
-        external_id=None,
-    )
+    try:
+        db_client = models.Client(
+            name=client.name,
+            email=client.email,
+            mrr=client.mrr,
+            contract_end=client.contract_end,
+            company_id=company_id,
+            status="active",
+        )
 
-    db.add(db_client)
-    db.commit()
-    db.refresh(db_client)
+        db.add(db_client)
+        db.commit()
+        db.refresh(db_client)
 
-    return db_client
+        return db_client
+
+    except Exception as e:
+        db.rollback()
+        print("❌ CREATE CLIENT ERROR:", e)
+        raise
+
 
 
 

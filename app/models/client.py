@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
 
-class Client(Base):
+class Customer(Base):
     __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, index=True)
